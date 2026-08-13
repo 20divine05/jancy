@@ -7,7 +7,9 @@ const File = require('../models/File');
  * whose corresponding document in MongoDB has expired or self-destructed.
  */
 const cleanupOrphanFiles = async () => {
-  const uploadDir = path.join(__dirname, '../uploads');
+  const uploadDir = process.env.VERCEL
+    ? path.join('/tmp', 'uploads')
+    : path.join(__dirname, '../uploads');
 
   if (!fs.existsSync(uploadDir)) return;
 
@@ -15,7 +17,6 @@ const cleanupOrphanFiles = async () => {
     const filesOnDisk = fs.readdirSync(uploadDir);
     if (filesOnDisk.length === 0) return;
 
-    // Fetch all active storagePaths from database
     const activeDocs = await File.find({}, 'storagePath');
     const activeStoragePaths = new Set(
       activeDocs.map((doc) => path.resolve(doc.storagePath))
@@ -44,15 +45,9 @@ const cleanupOrphanFiles = async () => {
   }
 };
 
-/**
- * Initializes cleanup scheduler
- * @param {number} intervalMs Cleanup interval in milliseconds (default: 5 minutes)
- */
 const startCleanupScheduler = (intervalMs = 5 * 60 * 1000) => {
   console.log('🔄 Orphan file background cleanup worker initialized.');
-  // Run once immediately on startup
   cleanupOrphanFiles();
-  // Schedule periodic runs
   setInterval(cleanupOrphanFiles, intervalMs);
 };
 
