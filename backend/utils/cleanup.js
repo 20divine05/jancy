@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
 const File = require('../models/File');
+
+const isMongoConnected = () => mongoose.connection.readyState === 1;
 
 /**
  * Sweeps the uploads directory and deletes any physical file
@@ -17,6 +20,11 @@ const cleanupOrphanFiles = async () => {
     const filesOnDisk = fs.readdirSync(uploadDir);
     if (filesOnDisk.length === 0) return;
 
+    if (!isMongoConnected()) {
+      // Skip orphan sweep when not connected to MongoDB daemon
+      return;
+    }
+
     const activeDocs = await File.find({}, 'storagePath');
     const activeStoragePaths = new Set(
       activeDocs.map((doc) => path.resolve(doc.storagePath))
@@ -24,6 +32,7 @@ const cleanupOrphanFiles = async () => {
 
     let deletedCount = 0;
     for (const filename of filesOnDisk) {
+      if (filename === '.gitkeep') continue;
       const fullPath = path.resolve(path.join(uploadDir, filename));
 
       if (!activeStoragePaths.has(fullPath)) {

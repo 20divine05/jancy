@@ -4,6 +4,7 @@ const upload = require('../middleware/upload');
 const {
   uploadFile,
   getFileInfo,
+  verifyPasscode,
   downloadFile,
   getStats,
 } = require('../controllers/fileController');
@@ -13,6 +14,9 @@ router.post('/upload', upload.single('file'), uploadFile);
 
 // Get file metadata endpoint
 router.get('/info/:id', getFileInfo);
+
+// Verify passcode endpoint (does not consume download count)
+router.post('/verify-passcode/:id', verifyPasscode);
 
 // Download file endpoint
 router.post('/download/:id', downloadFile);

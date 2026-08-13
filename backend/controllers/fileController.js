@@ -154,6 +154,52 @@ exports.getFileInfo = async (req, res) => {
 };
 
 /**
+ * POST /api/files/verify-passcode/:id
+ * Verify passcode without incrementing download count.
+ */
+exports.verifyPasscode = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { passcode } = req.body || {};
+
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(404).json({ success: false, message: 'Link expired or destroyed' });
+    }
+
+    let fileDoc;
+    if (isMongoConnected()) {
+      fileDoc = await File.findById(id);
+    } else {
+      fileDoc = memoryStore.get(id);
+    }
+
+    if (!fileDoc) {
+      return res.status(404).json({ success: false, message: 'Link expired or destroyed' });
+    }
+
+    if (new Date() >= new Date(fileDoc.expiresAt) || fileDoc.downloadCount >= fileDoc.maxDownloads) {
+      triggerFileSelfDestruct(fileDoc);
+      return res.status(404).json({ success: false, message: 'Link expired or destroyed' });
+    }
+
+    if (fileDoc.passcode) {
+      if (!passcode) {
+        return res.status(401).json({ success: false, message: 'Passcode required' });
+      }
+      const isMatch = await bcrypt.compare(passcode.trim(), fileDoc.passcode);
+      if (!isMatch) {
+        return res.status(401).json({ success: false, message: 'Incorrect passcode' });
+      }
+    }
+
+    res.status(200).json({ success: true, message: 'Passcode verified successfully' });
+  } catch (error) {
+    console.error('Error in verifyPasscode:', error);
+    res.status(500).json({ success: false, message: 'Server error verifying passcode' });
+  }
+};
+
+/**
  * POST /api/files/download/:id
  * Verify passcode (if required), increment download count, stream file, and trigger self-destruct if limit reached.
  */

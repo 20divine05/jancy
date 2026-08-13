@@ -52,34 +52,17 @@ const DownloadPage = () => {
     setPasscode(enteredPasscode);
 
     try {
-      // Test passcode by attempting download stream check or download directly
-      const response = await axios.post(
-        `/api/files/download/${id}`,
-        { passcode: enteredPasscode },
-        { responseType: 'blob' }
-      );
+      const response = await axios.post(`/api/files/verify-passcode/${id}`, {
+        passcode: enteredPasscode,
+      });
 
-      // Check if response is a file blob
-      if (response.data && response.data.type !== 'application/json') {
+      if (response.data.success) {
         setPasscodeVerified(true);
-        // Trigger direct download from the verified blob stream
-        triggerBlobDownload(response.data, fileInfo?.filename || 'downloaded_file');
       }
     } catch (err) {
       console.error('Passcode verification error:', err);
-      if (err.response && err.response.data instanceof Blob) {
-        // Parse error message from blob
-        const text = await err.response.data.text();
-        try {
-          const jsonErr = JSON.parse(text);
-          if (jsonErr.message === 'Link expired or destroyed') {
-            setIsExpired(true);
-          } else {
-            setPasscodeError(jsonErr.message || 'Incorrect passcode');
-          }
-        } catch {
-          setPasscodeError('Incorrect passcode. Please try again.');
-        }
+      if (err.response?.status === 404) {
+        setIsExpired(true);
       } else {
         setPasscodeError(err.response?.data?.message || 'Incorrect passcode');
       }
