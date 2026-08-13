@@ -52,8 +52,13 @@ const ConfigPanel = ({
             className="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-mono"
           >
             <option value={1}>1 Download (Burn on Read)</option>
+            <option value={2}>2 Downloads</option>
+            <option value={3}>3 Downloads</option>
+            <option value={4}>4 Downloads</option>
             <option value={5}>5 Downloads</option>
             <option value={10}>10 Downloads</option>
+            <option value={20}>20 Downloads</option>
+            <option value={50}>50 Downloads</option>
           </select>
         </div>
 
