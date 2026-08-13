@@ -78,8 +78,10 @@ exports.uploadFile = async (req, res) => {
       }, Math.max(0, ttlMs));
     }
 
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-    const downloadUrl = `${clientUrl}/download/${fileId}`;
+    const host = req.get('host');
+    const protocol = req.get('x-forwarded-proto') || req.protocol || 'http';
+    const baseUrl = process.env.CLIENT_URL || `${protocol}://${host}`;
+    const downloadUrl = `${baseUrl}/download/${fileId}`;
 
     res.status(201).json({
       success: true,
