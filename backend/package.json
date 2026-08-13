@@ -1,0 +1,21 @@
+{
+  "name": "dropshield-backend",
+  "version": "1.0.0",
+  "description": "Disposable, secure file-sharing service backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "axios": "^1.19.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
+    "express": "^5.1.0",
+    "form-data": "^4.0.6",
+    "mongodb-memory-server": "^10.1.4",
+    "mongoose": "^9.1.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}
